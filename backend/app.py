@@ -61,11 +61,12 @@ def register_health(app):
 def register_blueprints(app):
     """注册核心业务 Blueprint。
 
-    占位:auth / cards / user / leaderboard / admin 待后续实现。
+    已接入:auth(/api/auth)、user(/api/user)。
+    待后续:cards / leaderboard / admin。
     """
-    # from auth.routes import bp as auth_bp
-    # app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    pass
+    from auth.routes import auth_bp, user_bp
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+    app.register_blueprint(user_bp, url_prefix="/api/user")
 
 
 if __name__ == "__main__":
