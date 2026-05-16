@@ -1,54 +1,48 @@
-import { useEffect, useState } from 'react'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import CardWall from './pages/CardWall'
+import CardDetail from './pages/CardDetail'
+import Login from './pages/Login'
+import { getToken } from './api'
 
-// 移动端优先布局基线 + 后端连通性自检(调用 /api/health)。
-// 档案展示 / 游戏 / 后台等页面后续在此基础上扩展路由。
+// 移动端优先外壳:顶部标题 + 路由出口 + 底部导航。
 export default function App() {
-  const [health, setHealth] = useState({ state: 'loading' })
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((r) => r.json())
-      .then((d) => setHealth({ state: 'ok', data: d }))
-      .catch((e) => setHealth({ state: 'error', error: String(e) }))
-  }, [])
+  const loc = useLocation()
+  const logged = !!getToken()
 
   return (
     <div className="min-h-full bg-slate-50 flex flex-col">
-      <header className="bg-slate-900 text-white px-4 py-3 shadow">
-        <h1 className="text-lg font-bold">我们的王牌</h1>
-        <p className="text-xs text-slate-300">扑克游戏平台 · 开发骨架</p>
+      <header className="bg-slate-900 text-white px-4 py-3 sticky top-0 z-10 shadow">
+        <Link to="/">
+          <h1 className="text-lg font-bold">我们的王牌</h1>
+          <p className="text-[11px] text-slate-300">中山职业技术学院 · 创业校友扑克</p>
+        </Link>
       </header>
 
-      <main className="flex-1 p-4 max-w-screen-sm mx-auto w-full">
-        <section className="bg-white rounded-xl shadow p-4">
-          <h2 className="font-semibold mb-2">后端连通性自检</h2>
-          {health.state === 'loading' && (
-            <p className="text-slate-500 text-sm">检测中…</p>
-          )}
-          {health.state === 'ok' && (
-            <pre className="text-xs bg-slate-100 rounded p-2 overflow-x-auto">
-              {JSON.stringify(health.data, null, 2)}
-            </pre>
-          )}
-          {health.state === 'error' && (
-            <p className="text-hearts text-sm">
-              无法连接后端:{health.error}(确认 Flask 已在 5000 端口运行)
-            </p>
-          )}
-        </section>
-
-        <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-          {['扑克牌墙', '游戏中心', '排行榜', '我的'].map((t) => (
-            <div
-              key={t}
-              className="bg-white rounded-xl shadow p-6 text-center text-slate-400"
-            >
-              {t}
-              <div className="text-xs mt-1">(待开发)</div>
-            </div>
-          ))}
-        </div>
+      <main className="flex-1 pb-16">
+        <Routes>
+          <Route path="/" element={<CardWall />} />
+          <Route path="/card/:key" element={<CardDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<CardWall />} />
+        </Routes>
       </main>
+
+      <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex text-xs text-center">
+        {[
+          { to: '/', label: '牌墙' },
+          { to: '/login', label: logged ? '已登录' : '登录' },
+        ].map((t) => (
+          <Link
+            key={t.to}
+            to={t.to}
+            className={`flex-1 py-3 ${
+              loc.pathname === t.to ? 'text-slate-900 font-semibold' : 'text-slate-400'
+            }`}
+          >
+            {t.label}
+          </Link>
+        ))}
+      </nav>
     </div>
   )
 }
