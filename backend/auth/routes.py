@@ -93,6 +93,38 @@ def login():
     })
 
 
+@auth_bp.post("/admin-login")
+def admin_login():
+    """临时管理员登录(短信未开通前的过渡)。
+
+    校验手机号 == 配置 ADMIN_PHONE 且 password == ADMIN_TEMP_PASSWORD,
+    自动创建/提升该用户为 admin 并签发 JWT。接入短信后应下线本接口。
+    """
+    from flask import current_app
+
+    body = request.get_json(silent=True) or {}
+    phone = (body.get("phone") or "").strip()
+    password = body.get("password") or ""
+    cfg = current_app.config
+
+    if phone != cfg["ADMIN_PHONE"] or password != cfg["ADMIN_TEMP_PASSWORD"]:
+        return fail(ERR_PARAM, "管理员手机号或临时口令错误")
+
+    user = User.query.filter_by(phone=phone).first()
+    if user is None:
+        user = User(phone=phone, role="admin", points=0)
+        db.session.add(user)
+    else:
+        user.role = "admin"
+    db.session.commit()
+
+    tokens = service.issue_tokens(user)
+    return ok({
+        **tokens,
+        "user": {"id": user.id, "phone": user.phone, "role": user.role},
+    })
+
+
 @auth_bp.post("/refresh")
 def refresh():
     auth_header = request.headers.get("Authorization", "")

@@ -28,6 +28,10 @@ class Config:
     SMS_CODE_TTL = timedelta(minutes=5)      # 验证码有效期
     SMS_RESEND_INTERVAL = timedelta(seconds=60)  # 同号发送间隔
 
+    # 临时管理员登录(短信未开通前的过渡方案,接入短信后应移除/关闭)
+    ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "13424514766")
+    ADMIN_TEMP_PASSWORD = os.environ.get("ADMIN_TEMP_PASSWORD", "ZSPT@wmdwp2026")
+
     # 登录安全
     LOGIN_MAX_FAIL = 5
     LOGIN_LOCK_DURATION = timedelta(minutes=15)

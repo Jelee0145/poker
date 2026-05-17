@@ -66,6 +66,7 @@ def card_detail(c):
         "latest_news": c.latest_news,
         "alumni_quote": c.alumni_quote,
         "extra_data": _safe_json(c.extra_data),
+        "is_published": bool(c.is_published),
         "updated_at": c.updated_at.isoformat() if c.updated_at else None,
     }
 

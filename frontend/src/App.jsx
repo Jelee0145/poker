@@ -2,6 +2,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import CardWall from './pages/CardWall'
 import CardDetail from './pages/CardDetail'
 import SpecialDetail from './pages/SpecialDetail'
+import Admin from './pages/Admin'
 import Login from './pages/Login'
 import { getToken } from './api'
 
@@ -9,6 +10,16 @@ export default function App() {
   const loc = useLocation()
   const logged = !!getToken()
   const onHome = loc.pathname === '/'
+
+  // 管理后台:独立全屏,无公众端顶栏/底栏
+  if (loc.pathname.startsWith('/admin')) {
+    return (
+      <Routes>
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/*" element={<Admin />} />
+      </Routes>
+    )
+  }
 
   return (
     <div className="min-h-full flex flex-col bg-school-tint">

@@ -47,4 +47,25 @@ export const api = {
   profile: () => request('/user/profile', { auth: true }),
   leaderboard: (game) =>
     request(`/leaderboard${game ? `?game=${game}` : ''}`),
+
+  // ---- 管理后台 ----
+  adminLogin: (phone, password) =>
+    request('/auth/admin-login', { method: 'POST', body: { phone, password } }),
+  adminStats: () => request('/admin/stats', { auth: true }),
+  adminUsers: (q = '', page = 1) =>
+    request(`/admin/users?q=${encodeURIComponent(q)}&page=${page}&size=20`, { auth: true }),
+  adminSetPoints: (id, payload) =>
+    request(`/admin/users/${id}/points`, { method: 'POST', body: payload, auth: true }),
+  adminCards: (q = '', page = 1) =>
+    request(`/admin/cards?q=${encodeURIComponent(q)}&page=${page}&size=20`, { auth: true }),
+  adminEditCard: (id, payload) =>
+    request(`/admin/cards/${id}`, { method: 'PUT', body: payload, auth: true }),
+  adminSpecial: () => request('/admin/special-cards', { auth: true }),
+  adminEditSpecial: (type, payload) =>
+    request(`/admin/special-cards/${type}`, { method: 'PUT', body: payload, auth: true }),
+  adminGames: () => request('/admin/games', { auth: true }),
+  adminToggleGame: (gameId, enabled) =>
+    request(`/admin/games/${gameId}/toggle`, {
+      method: 'POST', body: { enabled }, auth: true,
+    }),
 }
