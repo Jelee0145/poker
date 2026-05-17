@@ -117,7 +117,7 @@ export default function CardWall() {
               <span className="text-xl font-bold text-[#E8B33A]">♛</span>
               <h2 className="font-bold text-school-deep">王牌 · 学校与学院</h2>
             </div>
-            <div className="grid grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {sortedSpecial.map((s) => (
                 <SpecialCard key={s.type} card={s} />
               ))}

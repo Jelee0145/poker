@@ -1,53 +1,44 @@
 import { Link } from 'react-router-dom'
 
-// 王牌:大王=中山职业技术学院,小王=创新创业学院。
-// 比普通牌更尊贵:深蓝底 + 金色描边 + 皇冠,贴合"王牌"定位。
+// 王牌(大王=学校 / 小王=学院)。紧凑横向卡:左徽标 + 右文字。
+// 王牌没有点数,不显示 K/J,只标「大王 / 小王」。
 export default function SpecialCard({ card }) {
   const isKing = card.type === 'king'
-  const monogram = card.title?.[0] || '王'
 
   return (
     <Link
       to={`/special/${card.type}`}
-      className="group relative min-w-0 aspect-[3/4] rounded-2xl overflow-hidden
-                 flex flex-col items-center justify-between p-4 text-white
+      className="group relative flex items-center gap-3 rounded-xl overflow-hidden
+                 px-3 py-3 text-white ring-1 ring-[#E8B33A]/60 shadow-card
                  bg-gradient-to-br from-school-deep via-school to-school-dark
-                 ring-2 ring-[#E8B33A]/70 shadow-cardHover
-                 hover:-translate-y-1 transition-all duration-200"
+                 hover:-translate-y-0.5 transition-all duration-200"
     >
-      {/* 角标皇冠 */}
-      <div className="absolute top-2.5 left-3 text-[#E8B33A] leading-none">
-        <div className="text-sm font-extrabold">{isKing ? 'K' : 'JK'}</div>
-        <div className="text-xs">♛</div>
-      </div>
-      <div className="absolute bottom-2.5 right-3 text-[#E8B33A] leading-none rotate-180">
-        <div className="text-sm font-extrabold">{isKing ? 'K' : 'JK'}</div>
-        <div className="text-xs">♛</div>
-      </div>
+      <span className="pointer-events-none absolute -right-3 -bottom-3 text-[64px]
+                       leading-none text-[#E8B33A]/10 select-none">♛</span>
 
-      <span className="mt-3 text-[11px] tracking-[0.3em] text-[#E8B33A] font-semibold">
-        {card.subtitle /* 大王 / 小王 */}
-      </span>
-
-      {/* 中心:大王用学校 logo,小王用字徽 */}
-      <div className="flex-1 flex items-center justify-center">
+      {/* 徽标 */}
+      <div className="shrink-0 w-12 h-12 rounded-full bg-white/10 ring-1 ring-[#E8B33A]/50
+                      flex items-center justify-center overflow-hidden">
         {isKing ? (
           <img
             src="/logo-zspt-white.png"
             alt={card.title}
-            className="w-[78%] max-h-16 object-contain"
+            className="w-9 h-9 object-contain"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-white/10 ring-2 ring-[#E8B33A]/60
-                          flex items-center justify-center text-3xl font-bold">
-            {monogram}
-          </div>
+          <span className="text-xl font-bold">{card.title?.[0]}</span>
         )}
       </div>
 
-      <p className="text-center text-[13px] font-bold leading-snug pb-2">
-        {card.title}
-      </p>
+      {/* 文字 */}
+      <div className="min-w-0 flex-1 relative">
+        <span className="inline-block text-[10px] tracking-[0.2em] text-[#E8B33A] font-semibold">
+          {card.subtitle /* 大王 / 小王 */}
+        </span>
+        <p className="text-sm font-bold leading-tight truncate">{card.title}</p>
+      </div>
+
+      <span className="relative text-[#E8B33A] text-lg shrink-0">♛</span>
     </Link>
   )
 }
