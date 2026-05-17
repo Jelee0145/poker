@@ -40,10 +40,14 @@ export default function Login() {
   return (
     <div className="max-w-xs mx-auto p-6 mt-8">
       <div className="rounded-3xl bg-white shadow-card p-6">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-tiffany-light to-tiffany flex items-center justify-center text-tiffany-deep text-xl font-bold mb-3">
-          ♠
+        <div className="-mx-6 -mt-6 mb-5 px-6 py-4 bg-gradient-to-r from-school to-school-dark rounded-t-3xl">
+          <img
+            src="/logo-zspt-white.png"
+            alt="中山职业技术学院"
+            className="h-8 w-auto object-contain"
+          />
         </div>
-        <h1 className="text-lg font-extrabold text-tiffany-deep">登录 / 注册</h1>
+        <h1 className="text-lg font-extrabold text-school-deep">登录 / 注册</h1>
         <p className="text-xs text-slate-400 mb-5">手机号 + 验证码,新号自动注册</p>
         <form onSubmit={submit} className="space-y-3">
           <input
@@ -51,8 +55,8 @@ export default function Login() {
             onChange={(e) => setPhone(e.target.value)}
             placeholder="手机号"
             inputMode="numeric"
-            className="w-full px-4 py-2.5 rounded-xl bg-tiffany/10 text-sm
-                       outline-none focus:ring-2 focus:ring-tiffany"
+            className="w-full px-4 py-2.5 rounded-xl bg-school-light text-sm
+                       outline-none focus:ring-2 focus:ring-school"
           />
           <div className="flex gap-2">
             <input
@@ -60,20 +64,20 @@ export default function Login() {
               onChange={(e) => setCode(e.target.value)}
               placeholder="验证码"
               inputMode="numeric"
-              className="flex-1 px-4 py-2.5 rounded-xl bg-tiffany/10 text-sm
-                         outline-none focus:ring-2 focus:ring-tiffany"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-school-light text-sm
+                         outline-none focus:ring-2 focus:ring-school"
             />
             <button
               type="button"
               disabled={cd > 0 || phone.length !== 11}
               onClick={send}
               className="px-4 py-2.5 text-sm rounded-xl font-medium
-                         bg-tiffany/20 text-tiffany-deep disabled:opacity-40"
+                         bg-school-light text-school-dark disabled:opacity-40"
             >
               {cd > 0 ? `${cd}s` : '获取'}
             </button>
           </div>
-          <button className="w-full py-2.5 rounded-xl bg-tiffany text-tiffany-deep font-semibold hover:bg-tiffany-dark transition">
+          <button className="w-full py-2.5 rounded-xl bg-school text-white font-semibold hover:bg-school-dark transition">
             登录
           </button>
         </form>

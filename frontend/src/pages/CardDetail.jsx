@@ -13,9 +13,9 @@ const SUIT_COLOR = {
 function Field({ label, value }) {
   if (!value) return null
   return (
-    <div className="flex py-2.5 border-b border-tiffany/15 text-sm">
+    <div className="flex py-2.5 border-b border-school/10 text-sm">
       <span className="w-24 text-slate-400 shrink-0">{label}</span>
-      <span className="flex-1 text-tiffany-deep">{value}</span>
+      <span className="flex-1 text-school-deep">{value}</span>
     </div>
   )
 }
@@ -35,24 +35,24 @@ export default function CardDetail() {
   if (error)
     return (
       <div className="p-8 text-center">
-        <p className="text-hearts">{error}</p>
-        <Link to="/" className="text-tiffany-dark text-sm underline mt-4 inline-block">
+        <p className="text-schoolred">{error}</p>
+        <Link to="/" className="text-school text-sm underline mt-4 inline-block">
           返回牌墙
         </Link>
       </div>
     )
   if (!card)
-    return <p className="p-8 text-center text-tiffany-dark animate-pulse">加载中…</p>
+    return <p className="p-8 text-center text-school animate-pulse">加载中…</p>
 
   const sym = SUIT_SYMBOL[card.suit]
-  const color = SUIT_COLOR[card.suit] || 'text-tiffany-deep'
+  const color = SUIT_COLOR[card.suit] || 'text-school'
   const name = card.alumni_name?.replace(/【占位】/, '')
 
   return (
     <div className="max-w-screen-sm mx-auto p-4">
       {/* 牌面头卡 */}
       <div className="relative rounded-3xl bg-white shadow-card overflow-hidden">
-        <div className="h-2 bg-gradient-to-r from-tiffany to-tiffany-dark" />
+        <div className="h-2 bg-gradient-to-r from-school to-school-mid" />
         <div className={`absolute top-5 left-4 leading-none ${color}`}>
           <div className="text-xl font-extrabold">{card.rank}</div>
           <div className="text-lg">{sym}</div>
@@ -63,20 +63,20 @@ export default function CardDetail() {
         </div>
 
         <div className="flex flex-col items-center pt-6 pb-6 px-6">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-tiffany-light to-tiffany flex items-center justify-center text-3xl font-bold text-tiffany-deep ring-4 ring-white shadow-card">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-school-mid to-school flex items-center justify-center text-3xl font-bold text-white ring-4 ring-white shadow-card">
             {name?.[0]}
           </div>
-          <h1 className="mt-3 text-xl font-extrabold text-tiffany-deep">{name}</h1>
+          <h1 className="mt-3 text-xl font-extrabold text-school-deep">{name}</h1>
           <p className="text-sm text-slate-500">
             {card.position} · {card.company_name}
           </p>
-          <span className="mt-2 text-xs px-3 py-1 rounded-full bg-tiffany/15 text-tiffany-deep">
+          <span className="mt-2 text-xs px-3 py-1 rounded-full bg-school-light text-school-dark">
             {sym} {card.industry}
           </span>
         </div>
 
         {card.business_desc && (
-          <p className="mx-6 mb-6 text-sm bg-tiffany/10 rounded-2xl p-4 text-tiffany-deep leading-relaxed">
+          <p className="mx-6 mb-6 text-sm bg-school-light/60 rounded-2xl p-4 text-school-deep leading-relaxed">
             {card.business_desc}
           </p>
         )}
@@ -98,7 +98,7 @@ export default function CardDetail() {
 
       <Link
         to="/"
-        className="mt-5 block text-center py-3 rounded-full bg-tiffany text-tiffany-deep font-semibold hover:bg-tiffany-dark transition"
+        className="mt-5 block text-center py-3 rounded-full bg-school text-white font-semibold hover:bg-school-dark transition"
       >
         ‹ 返回扑克牌墙
       </Link>

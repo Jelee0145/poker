@@ -12,11 +12,10 @@ body,
 body {
   font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   -webkit-tap-highlight-color: transparent;
-  color: #0E4D45;
-  background: #F2FBF9;
+  color: #003A66;
+  background: #F4F8FC;
 }
 
-/* 扑克牌翻入动画 */
 @keyframes cardIn {
   from {
     opacity: 0;

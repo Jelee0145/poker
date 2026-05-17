@@ -10,16 +10,19 @@ export default function App() {
   const onHome = loc.pathname === '/'
 
   return (
-    <div className="min-h-full flex flex-col bg-[#F2FBF9]">
-      {/* 首页 hero 自带标题,内页才显示顶栏 */}
+    <div className="min-h-full flex flex-col bg-school-tint">
+      {/* 首页 hero 自带品牌头,内页才显示蓝底顶栏 */}
       {!onHome && (
-        <header className="bg-tiffany text-tiffany-deep px-4 py-3 sticky top-0 z-10 shadow-card">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-lg">♠</span>
-            <div>
-              <h1 className="text-base font-extrabold leading-none">我们的王牌</h1>
-              <p className="text-[11px] opacity-75">创业校友扑克</p>
-            </div>
+        <header className="bg-school text-white px-4 py-2.5 sticky top-0 z-10 shadow-card">
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src="/logo-zspt-white.png"
+              alt="中山职业技术学院"
+              className="h-7 w-auto object-contain"
+            />
+            <span className="text-sm font-bold border-l border-white/30 pl-3">
+              我们的王牌
+            </span>
           </Link>
         </header>
       )}
@@ -33,7 +36,7 @@ export default function App() {
         </Routes>
       </main>
 
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-tiffany/30 flex text-xs text-center shadow-[0_-4px_16px_-8px_rgba(14,77,69,0.2)]">
+      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-school/15 flex text-xs text-center shadow-[0_-4px_16px_-8px_rgba(0,58,102,0.18)]">
         {[
           { to: '/', label: '牌墙', icon: '♠' },
           { to: '/login', label: logged ? '我的' : '登录', icon: '◆' },
@@ -44,10 +47,10 @@ export default function App() {
               key={t.to}
               to={t.to}
               className={`flex-1 py-2.5 ${
-                active ? 'text-tiffany-deep font-semibold' : 'text-slate-400'
+                active ? 'text-school font-semibold' : 'text-slate-400'
               }`}
             >
-              <div className={`text-base ${active ? 'text-tiffany-dark' : ''}`}>{t.icon}</div>
+              <div className={`text-base ${active ? 'text-school' : ''}`}>{t.icon}</div>
               {t.label}
             </Link>
           )
