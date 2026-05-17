@@ -51,9 +51,6 @@ export default function PokerCard({ card, index = 0 }) {
         <p className="w-full text-center text-[11px] text-slate-500 truncate">
           {card.company_name?.replace(/【.*?】/, '')}
         </p>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-school-light text-school-dark shrink-0">
-          {card.industry}
-        </span>
       </div>
     </Link>
   )

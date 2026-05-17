@@ -8,9 +8,11 @@ import json
 
 from models import Card, SpecialCard
 
-SUITS = ("hearts", "spades", "clubs", "diamonds")
+# 展示顺序:黑桃 → 红桃 → 梅花 → 方块
+SUITS = ("spades", "hearts", "clubs", "diamonds")
+# 每种花色内:A、K、Q、J、10 … 3、2
 RANK_ORDER = {r: i for i, r in enumerate(
-    ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
+    ["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"]
 )}
 
 

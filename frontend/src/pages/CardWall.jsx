@@ -3,11 +3,12 @@ import { api } from '../api'
 import PokerCard from '../components/PokerCard'
 import SpecialCard from '../components/SpecialCard'
 
+// 展示顺序:黑桃 → 红桃 → 梅花 → 方块(花色分组,不按行业)
 const SUITS = [
-  { key: 'hearts', symbol: '♥', label: '科技 · 互联网 · AI', color: 'text-hearts', bar: 'bg-hearts' },
-  { key: 'spades', symbol: '♠', label: '电商 · 贸易 · 金融', color: 'text-spades', bar: 'bg-spades' },
-  { key: 'clubs', symbol: '♣', label: '餐饮 · 服务 · 零售', color: 'text-clubs', bar: 'bg-clubs' },
-  { key: 'diamonds', symbol: '♦', label: '制造 · 实体 · 农业', color: 'text-diamonds', bar: 'bg-diamonds' },
+  { key: 'spades', symbol: '♠', name: '黑桃', color: 'text-spades', bar: 'bg-spades' },
+  { key: 'hearts', symbol: '♥', name: '红桃', color: 'text-hearts', bar: 'bg-hearts' },
+  { key: 'clubs', symbol: '♣', name: '梅花', color: 'text-clubs', bar: 'bg-clubs' },
+  { key: 'diamonds', symbol: '♦', name: '方块', color: 'text-diamonds', bar: 'bg-diamonds' },
 ]
 
 export default function CardWall() {
@@ -58,7 +59,7 @@ export default function CardWall() {
           <img
             src="/logo-zspt-white.png"
             alt="中山职业技术学院"
-            className="h-9 w-auto object-contain object-left"
+            className="h-9 w-auto object-contain ml-auto block"
           />
           <h1 className="mt-4 text-2xl font-extrabold text-white tracking-wide">
             我们的王牌
@@ -132,7 +133,7 @@ export default function CardWall() {
               <div className="flex items-center gap-2 mb-3">
                 <span className={`w-1.5 h-6 rounded-full ${g.bar}`} />
                 <span className={`text-xl font-bold ${g.color}`}>{g.symbol}</span>
-                <h2 className="font-bold text-school-deep">{g.label}</h2>
+                <h2 className="font-bold text-school-deep">{g.name}</h2>
                 <span className="ml-auto text-xs text-slate-400">
                   {g.items.length} 张
                 </span>
