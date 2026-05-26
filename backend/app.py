@@ -41,11 +41,12 @@ def create_app(config_object=None):
     register_blueprints(app)
 
     with app.app_context():
+        auto_setup_database(app)
         register_games(app)
         try:
             sync_games_to_db(app)
-        except Exception as exc:  # noqa: BLE001 首次迁移前表不存在,容忍
-            app.logger.warning("games 表同步跳过(可能尚未迁移):%s", exc)
+        except Exception as exc:
+            app.logger.warning("games 表同步跳过:%s", exc)
 
     register_frontend(app)
 
@@ -119,6 +120,29 @@ def register_blueprints(app):
     app.register_blueprint(special_bp, url_prefix="/api/special-cards")
     app.register_blueprint(leaderboard_bp, url_prefix="/api/leaderboard")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
+
+
+def auto_setup_database(app):
+    """部署时自动建表 + 填充占位数据（幂等，重复运行安全）。"""
+    try:
+        migrate.upgrade(revision="head")
+        app.logger.info("数据库迁移完成")
+    except Exception as exc:
+        app.logger.warning("数据库迁移跳过:%s", exc)
+        return
+
+    from models import Card
+    if Card.query.count() > 0:
+        app.logger.info("数据库已有数据，跳过 seed")
+        return
+
+    try:
+        import seed
+        seed.seed_cards()
+        seed.seed_special()
+        app.logger.info("占位数据 seed 完成")
+    except Exception as exc:
+        app.logger.warning("占位数据 seed 跳过:%s", exc)
 
 
 def register_frontend(app):
