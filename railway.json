@@ -1,0 +1,11 @@
+{
+  "build": {
+    "buildCommand": "cd frontend && npm install && npm run build"
+  },
+  "deploy": {
+    "rootDir": "backend",
+    "startCommand": "gunicorn app:create_app --bind 0.0.0.0:$PORT",
+    "healthcheckPath": "/api/health",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
