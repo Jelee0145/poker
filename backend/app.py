@@ -3,7 +3,8 @@
 职责:加载配置、初始化扩展、注册安全响应头、健康检查、
 核心 Blueprint 与游戏插件。
 """
-from flask import Flask
+import os
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 from config import get_config
@@ -45,6 +46,8 @@ def create_app(config_object=None):
             sync_games_to_db(app)
         except Exception as exc:  # noqa: BLE001 首次迁移前表不存在,容忍
             app.logger.warning("games 表同步跳过(可能尚未迁移):%s", exc)
+
+    register_frontend(app)
 
     return app
 
@@ -116,6 +119,30 @@ def register_blueprints(app):
     app.register_blueprint(special_bp, url_prefix="/api/special-cards")
     app.register_blueprint(leaderboard_bp, url_prefix="/api/leaderboard")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
+
+
+def register_frontend(app):
+    """部署环境托管前端构建产物（SPA catch-all）。
+
+    开发环境（FLASK_ENV=dev）跳过，由 Vite 开发服务器处理。
+    """
+    if os.environ.get("FLASK_ENV") == "dev":
+        return
+    dist_dir = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "frontend", "dist"
+    )
+    if not os.path.isdir(dist_dir):
+        app.logger.warning("frontend/dist 不存在，跳过前端托管")
+        return
+
+    @app.route("/assets/<path:filename>")
+    def frontend_assets(filename):
+        return send_from_directory(os.path.join(dist_dir, "assets"), filename)
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def frontend_spa(path):
+        return send_from_directory(dist_dir, "index.html")
 
 
 if __name__ == "__main__":

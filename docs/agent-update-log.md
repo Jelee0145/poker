@@ -248,84 +248,20 @@
 
 ### 验证结果
 - ✅ `vite build` 零报错编译通过
-## 2026-05-26 (Session 18) — 7 游戏全量集成：平台整合 + 前端清单 + 文档定稿
+## 2026-05-26 (Session 18) — 游戏列表首次提交
 
 ### 目标
-将 Sessions 12-17 规划并实现的所有游戏平台改动、前端基础设施、7 个后端插件和 7 个前端页面汇总提交，完成从"零散插件+单独页面"到"统一注册+路由守卫+公开列表"的平台级整合。
+把 Sessions 12-17 写代码攒出来的游戏列表及其配套基础设施提交到远程。
 
-### Hazard 检查
-- ✅ 后端平台核心文件修改仅限于指定的新增范围（app.py 加公开列表端点、registry.py 加自动 /check、scoring.py 加 check_availability）
-- ✅ 未改数据库 schema（无需 migration）
-- ✅ 未改响应格式（恒为 {code, message, data}）
-- ✅ 未改插件契约（7 个游戏严格遵守 scoring 规则，不自行发放积分）
-- ✅ 文档同步更新到当前实现
+### 变更文件（相对远端新增/修改）
 
-### 变更文件
+**后端**：`PUBLIC_GAME_IDS` 白名单 + `GET /api/games` 公开列表 + `/check` 自动预检端点 + `check_availability()` 函数
 
-#### 后端平台修改（已跟踪文件）
+**前端**：`GameList.jsx` 列表页 + `GameGuard.jsx` 路由守卫 + `GameCard.jsx` 纸牌组件 + `gameRegistry.js` 注册清单 + 7 个游戏页面 + `api.js` 游戏方法 + `App.jsx` 游戏路由/导航 + 动画/safelist
 
-| 文件 | 变更说明 |
-|------|----------|
-| `backend/app.py` | 新增 `PUBLIC_GAME_IDS` 白名单元组 + `GET /api/games` 公开列表端点，仅返回已上架且在白名单内的正式游戏 |
-| `backend/common/scoring.py` | 新增 `check_availability(user, game_key)` 只读预检函数；将 `get_game_config` 改为延迟导入避免循环引用 |
-| `backend/games/registry.py` | 为每个已注册游戏自动添加 `POST /check` 路由（调用 auth + check_availability），单插件失败隔离不影响整体 |
+**插件**：7 个后端游戏目录（klondike/freecell/pyramid/tripeaks/golf/clock/spider_solitaire）
 
-#### 7 个后端游戏插件（新增目录）
-
-| 目录 | 游戏 |
-|------|------|
-| `backend/games/klondike/` | 经典克朗代克（draw-1 / draw-3 难度） |
-| `backend/games/freecell/` | 空当接龙（8 列 + 4 自由格） |
-| `backend/games/pyramid/` | 金字塔纸牌（金字塔牌阵配 stock/waste） |
-| `backend/games/tripeaks/` | 三峰纸牌（三座山 + 配牌区） |
-| `backend/games/golf/` | 高尔夫纸牌（7 列 + 底牌轮换） |
-| `backend/games/clock/` | 时钟纸牌（13 堆时钟牌阵） |
-| `backend/games/spider_solitaire/` | 蜘蛛纸牌（1/2 色难度，2 色完整版） |
-
-#### 前端基础设施（新增文件）
-
-| 文件 | 说明 |
-|------|------|
-| `frontend/src/config/gameRegistry.js` | 正式游戏注册清单，统一维护 gameId/route/emoji/component 映射 |
-| `frontend/src/components/GameGuard.jsx` | 路由守卫：自动检测登录态 + 调用 /check 预检，拦截未登录/次数耗尽用户 |
-| `frontend/src/components/GameCard.jsx` | 可复用纸牌组件：Face（牌面）、Back（牌背）、Empty（空牌位），内置素材降级方案 |
-| `frontend/src/pages/GameList.jsx` | 游戏列表页：从后端 /api/games 获取列表，按前端注册顺序排序展示 |
-
-#### 前端 7 个游戏页面（新增文件）
-
-| 文件 | 游戏 |
-|------|------|
-| `frontend/src/pages/Klondike.jsx` | 克朗代克 |
-| `frontend/src/pages/FreeCell.jsx` | 空当接龙 |
-| `frontend/src/pages/Pyramid.jsx` | 金字塔 |
-| `frontend/src/pages/TriPeaks.jsx` | 三峰 |
-| `frontend/src/pages/Golf.jsx` | 高尔夫 |
-| `frontend/src/pages/Clock.jsx` | 时钟 |
-| `frontend/src/pages/SpiderSolitaire.jsx` | 蜘蛛纸牌（2 色） |
-
-#### 前端平台修改（已跟踪文件）
-
-| 文件 | 变更说明 |
-|------|----------|
-| `frontend/src/App.jsx` | 新增 `/games` 路由 + 从 `gameRegistry.js` 批量注册 7 个游戏路由 + 底部导航增加「游戏」入口（含 /game/* 子路由高亮） |
-| `frontend/src/api.js` | 新增 `games()` / `gameInfo()` / `gameCheck()` / `gamePlay()` / `gameScore()` 方法 |
-| `frontend/src/index.css` | 新增 `glow-pulse` 可操作闪烁动画 + `card-reveal` 翻牌 3D 动画 |
-| `frontend/tailwind.config.js` | 增加 `safelist` 保障动态生成的 card 样式类（ring/shadow/scale/z）不被 Tree-shaking |
-| `frontend/package.json` | 构建脚本改为直接调用本地 Vite 入口，修复 Windows 中文路径 npm shim 失败 |
-
-#### 文档更新
-
-| 文件 | 变更说明 |
-|------|----------|
-| `docs/游戏插件开发指南.md` | v2.1→v2.3：新增「后端自动注册≠前端正式开放」边界说明；重编号 4.2-4.5 节以适应新增的 /check 章节；补充游戏平台开发生命周期说明 |
-| `docs/agent-collaboration.md` | 补充 7 个正式游戏清单 + 接入边界说明 |
-| `docs/agent-update-log.md` | 本次提交记录 |
-
-### 验证结果
-- ✅ `npm run build`（前端构建）零报错通过
-- ✅ 7 个后端游戏 `/info` 接口均返回正常
-- ✅ 7 个前端页面均通过 `GameGuard` 路由守卫包裹
-- ✅ `GameList` 页面按前端注册顺序正确排序展示正式游戏
+**文档**：`游戏插件开发指南.md` v2.1→v2.3 + `agent-collaboration.md` 游戏清单更新
 
 ------
 
