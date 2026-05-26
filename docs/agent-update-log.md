@@ -2,6 +2,67 @@
 
 ---
 
+## 2026-05-26 (Session 20) — Demo 自动登录替代短信登录
+
+### 目标
+在当前 Railway 演示分支中临时移除短信登录门槛，改为页面启动时自动获取演示账号令牌，让站点默认处于已登录可试玩状态，同时保持现有鉴权、积分和接口约束不变。
+
+### Hazard 检查
+- ✅ 未修改数据库 schema，无需 migration
+- ✅ 未全局绕过 `require_auth`，仍使用真实 JWT 令牌访问受保护接口
+- ✅ 未修改游戏插件、计分逻辑与统一响应格式
+- ✅ 仅新增临时 demo 登录入口与前端自动取 token 逻辑
+
+### 变更文件
+
+| 文件 | 变更 |
+|------|------|
+| `backend/config.py` | 新增 `DEMO_PHONE` / `DEMO_NICKNAME` 配置 |
+| `backend/auth/routes.py` | 新增 `POST /api/auth/demo-login`，自动获取/创建演示用户并签发 JWT |
+| `frontend/src/api.js` | 新增 `demoLogin()` 与 `ensureDemoToken()`，统一处理演示令牌写入 |
+| `frontend/src/App.jsx` | 应用启动时自动换取演示 token，未完成前显示“正在进入演示账号” |
+| `frontend/src/pages/Login.jsx` | 登录页改为演示账号状态页，支持刷新或清除本地 token |
+| `frontend/vite.config.js` | 显式固定 Rollup HTML 入口为 `index.html`，规避 Windows 中文路径下的构建回归 |
+| `docs/agent-update-log.md` | 记录本次临时 demo 登录改造 |
+
+### 验证结果
+- ✅ `frontend` 执行 `npm run build` 通过
+
+---
+
+## 2026-05-26 (Session 19) — Railway 单服务部署改造
+
+### 目标
+将当前前后端分离的本地开发项目改造成可直接部署到 Railway 的单服务 Demo 形态，解决生产入口、前端静态资源托管、容器启动初始化和 Railway 识别构建链缺失的问题。
+
+### Hazard 检查
+- ✅ 修改平台层入口与配置，用于生产部署托管前端静态资源
+- ✅ 未修改数据库 schema，无需新增 migration
+- ✅ 未修改插件契约、计分规则与统一响应格式
+- ✅ 前端业务代码未改，仅新增生产交付链路
+- ✅ 文档同步补充 Railway 部署说明
+
+### 变更文件
+
+| 文件 | 变更 |
+|------|------|
+| `backend/app.py` | 生产环境下新增 SPA 静态托管与前端路由回退；启动时自动创建 SQLite/上传目录；本地直跑改为兼容 `PORT` |
+| `backend/config.py` | 新增 `DATA_DIR` 统一数据目录概念，生产 SQLite/上传路径改为可由环境变量覆盖 |
+| `backend/requirements.txt` | 新增 `gunicorn` 作为 Railway 生产 WSGI 服务器 |
+| `backend/wsgi.py` | 新增 Gunicorn 入口 |
+| `Dockerfile` | 新增 Railway 单容器多阶段构建：先打包前端，再运行 Flask |
+| `railway-start.sh` | 新增容器启动脚本：自动迁移、seed、启动 Gunicorn |
+| `.dockerignore` | 排除本地依赖、数据库、日志与构建噪音 |
+| `README.md` | 新增 Railway 部署方式、Volume 挂载和环境变量说明 |
+| `docs/agent-update-log.md` | 记录本次部署改造 |
+
+### 验证结果
+- ✅ `frontend` 执行 `npm run build` 通过
+- ⚠️ 本地后端运行态验证受当前 Windows 沙箱限制阻塞：中文路径下 `.venv\Scripts\python.exe` 无法被该执行环境拉起
+- ⚠️ `docker build` 二次验证受本机 Docker Desktop daemon 未就绪阻塞：`//./pipe/dockerDesktopLinuxEngine` 不存在
+
+---
+
 ## 2026-05-26 (Session 17) — 规范文档收尾同步
 
 ### 目标

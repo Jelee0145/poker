@@ -1,9 +1,9 @@
-"""Flask 应用工厂。
+"""Flask application factory."""
 
-职责:加载配置、初始化扩展、注册安全响应头、健康检查、
-核心 Blueprint 与游戏插件。
-"""
-from flask import Flask
+import os
+from pathlib import Path
+
+from flask import Flask, abort, send_from_directory
 from flask_cors import CORS
 
 from config import get_config
@@ -23,38 +23,46 @@ PUBLIC_GAME_IDS = (
 
 
 def create_app(config_object=None):
+    frontend_dist = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+
     app = Flask(__name__)
     app.config.from_object(config_object or get_config())
-    app.json.ensure_ascii = False  # 中文按原文返回,不转义为 \uXXXX
+    app.config["FRONTEND_DIST_DIR"] = str(frontend_dist)
+    app.json.ensure_ascii = False
 
-    # 扩展初始化
     db.init_app(app)
     migrate.init_app(app, db)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+    ensure_runtime_dirs(app)
 
-    # 注册模型(供 Flask-Migrate 发现)
     import models  # noqa: F401
 
     register_security_headers(app)
     register_health(app)
     register_blueprints(app)
+    register_frontend(app)
 
     with app.app_context():
         register_games(app)
         try:
             sync_games_to_db(app)
-        except Exception as exc:  # noqa: BLE001 首次迁移前表不存在,容忍
-            app.logger.warning("games 表同步跳过(可能尚未迁移):%s", exc)
+        except Exception as exc:  # noqa: BLE001
+            app.logger.warning("games table sync skipped before migrations: %s", exc)
 
     return app
 
 
-def register_security_headers(app):
-    """《安全规范》第 6.4 节:统一安全响应头。
+def ensure_runtime_dirs(app):
+    Path(app.config["UPLOAD_DIR"]).mkdir(parents=True, exist_ok=True)
 
-    注:纯 API + JWT 架构,不使用 Cookie 会话,故不引入 CSRF Token
-    (Q4 决策)。
-    """
+    db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    sqlite_prefix = "sqlite:///"
+    if db_uri.startswith(sqlite_prefix):
+        db_path = Path(db_uri[len(sqlite_prefix):])
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+
+
+def register_security_headers(app):
     @app.after_request
     def _add_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
@@ -73,43 +81,48 @@ def register_health(app):
 
     @app.get("/api/uploads/<path:filename>")
     def serve_upload(filename):
-        from flask import send_from_directory
         return send_from_directory(app.config["UPLOAD_DIR"], filename)
 
     @app.get("/api/settings")
     def public_settings():
-        """公开设置:扑克牌统一背面图。"""
         from models import AppSetting
+
         row = AppSetting.query.get("card_back_url")
         return ok({"card_back_url": row.value if row else None})
 
     @app.get("/api/games")
     def public_games():
-        """公开可用游戏列表（仅正式接入前端且已上架）。"""
         from models import Game
+
         rows = (
-            Game.query.filter(Game.is_enabled.is_(True), Game.game_id.in_(PUBLIC_GAME_IDS))
+            Game.query.filter(
+                Game.is_enabled.is_(True),
+                Game.game_id.in_(PUBLIC_GAME_IDS),
+            )
             .order_by(Game.id.asc())
             .all()
         )
-        return ok({"items": [{
-            "game_id": g.game_id,
-            "name": g.name,
-            "description": g.description,
-            "icon": f"/api/games/{g.game_id}/static/icon.png",
-        } for g in rows]})
+        return ok(
+            {
+                "items": [
+                    {
+                        "game_id": game.game_id,
+                        "name": game.name,
+                        "description": game.description,
+                        "icon": f"/api/games/{game.game_id}/static/icon.png",
+                    }
+                    for game in rows
+                ]
+            }
+        )
 
 
 def register_blueprints(app):
-    """注册核心业务 Blueprint。
-
-    已接入:auth(/api/auth)、user(/api/user)、cards(/api/cards)、
-    special-cards(/api/special-cards)。待后续:leaderboard / admin。
-    """
+    from admin.routes import admin_bp
     from auth.routes import auth_bp, user_bp
     from cards.routes import cards_bp, special_bp
     from leaderboard.routes import leaderboard_bp
-    from admin.routes import admin_bp
+
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(user_bp, url_prefix="/api/user")
     app.register_blueprint(cards_bp, url_prefix="/api/cards")
@@ -118,5 +131,26 @@ def register_blueprints(app):
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
 
 
+def register_frontend(app):
+    @app.get("/", defaults={"path": ""})
+    @app.get("/<path:path>")
+    def serve_frontend(path):
+        if path.startswith("api/"):
+            abort(404)
+
+        static_root = Path(app.config["FRONTEND_DIST_DIR"])
+        if path:
+            candidate = static_root / path
+            if candidate.is_file():
+                return send_from_directory(static_root, path)
+            if "." in Path(path).name:
+                abort(404)
+
+        index_file = static_root / "index.html"
+        if index_file.is_file():
+            return send_from_directory(static_root, "index.html")
+        abort(404)
+
+
 if __name__ == "__main__":
-    create_app().run(host="0.0.0.0", port=5000)
+    create_app().run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")))

@@ -1,4 +1,5 @@
-﻿import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import CardWall from './pages/CardWall'
 import CardDetail from './pages/CardDetail'
 import SpecialDetail from './pages/SpecialDetail'
@@ -7,14 +8,21 @@ import Login from './pages/Login'
 import GameList from './pages/GameList'
 import GameGuard from './components/GameGuard'
 import { PUBLIC_GAMES } from './config/gameRegistry'
-import { getToken } from './api'
+import { ensureDemoToken, getToken } from './api'
 
 export default function App() {
   const loc = useLocation()
-  const logged = !!getToken()
+  const [authReady, setAuthReady] = useState(false)
+  const [logged, setLogged] = useState(!!getToken())
   const onHome = loc.pathname === '/'
 
-  // 管理后台:独立全屏,无公众端顶栏/底栏
+  useEffect(() => {
+    ensureDemoToken()
+      .then(() => setLogged(true))
+      .catch(() => setLogged(!!getToken()))
+      .finally(() => setAuthReady(true))
+  }, [])
+
   if (loc.pathname.startsWith('/admin')) {
     return (
       <Routes>
@@ -24,9 +32,16 @@ export default function App() {
     )
   }
 
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-school-tint">
+        <div className="text-sm text-school/70">正在进入演示账号...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-full flex flex-col bg-school-tint">
-      {/* 首页 hero 自带品牌头,内页才显示蓝底顶栏 */}
       {!onHome && (
         <header className="bg-school text-white px-4 py-2.5 sticky top-0 z-10 shadow-card">
           <Link to="/" className="flex items-center gap-3">
@@ -65,20 +80,20 @@ export default function App() {
           { to: '/', label: '牌墙', icon: '♠' },
           { to: '/games', label: '游戏', icon: '🎮' },
           { to: '/login', label: logged ? '我的' : '登录', icon: '◆' },
-        ].map((t) => {
-          const active = t.to === '/games'
+        ].map((tab) => {
+          const active = tab.to === '/games'
             ? loc.pathname.startsWith('/game')
-            : loc.pathname === t.to
+            : loc.pathname === tab.to
           return (
             <Link
-              key={t.to}
-              to={t.to}
+              key={tab.to}
+              to={tab.to}
               className={`flex-1 py-2.5 ${
                 active ? 'text-school font-semibold' : 'text-slate-400'
               }`}
             >
-              <div className={`text-base ${active ? 'text-school' : ''}`}>{t.icon}</div>
-              {t.label}
+              <div className={`text-base ${active ? 'text-school' : ''}`}>{tab.icon}</div>
+              {tab.label}
             </Link>
           )
         })}

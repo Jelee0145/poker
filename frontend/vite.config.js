@@ -5,6 +5,11 @@ import react from '@vitejs/plugin-react'
 // 部署时由 Nginx 反向代理统一处理。
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: 'index.html',
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,

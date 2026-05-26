@@ -11,6 +11,8 @@ export function setToken(t) {
   else localStorage.removeItem(TOKEN_KEY)
 }
 
+let demoLoginPromise = null
+
 async function request(path, { method = 'GET', body, auth = false } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   if (auth) {
@@ -57,6 +59,8 @@ export const api = {
     request('/auth/send-code', { method: 'POST', body: { phone } }),
   login: (phone, code) =>
     request('/auth/login', { method: 'POST', body: { phone, code } }),
+  demoLogin: () =>
+    request('/auth/demo-login', { method: 'POST' }),
   profile: () => request('/user/profile', { auth: true }),
   leaderboard: (game) =>
     request(`/leaderboard${game ? `?game=${game}` : ''}`),
@@ -95,4 +99,22 @@ export const api = {
   adminPutSettings: (payload) =>
     request('/admin/settings', { method: 'PUT', body: payload, auth: true }),
   settings: () => request('/settings'),
+}
+
+export async function ensureDemoToken() {
+  const existing = getToken()
+  if (existing) return existing
+
+  if (!demoLoginPromise) {
+    demoLoginPromise = api.demoLogin()
+      .then((data) => {
+        setToken(data.access_token)
+        return data.access_token
+      })
+      .finally(() => {
+        demoLoginPromise = null
+      })
+  }
+
+  return demoLoginPromise
 }

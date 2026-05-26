@@ -40,6 +40,47 @@ npm install
 npm run dev
 ```
 
+## Railway 部署（Demo 预览）
+
+仓库现在按“单服务”方式部署：
+
+- `Dockerfile` 先构建 `frontend/dist`
+- Flask 生产环境直接托管前端静态文件和 SPA 路由
+- 容器启动时自动执行 `flask db upgrade` 和 `python seed.py`
+- 最终由 Gunicorn 监听 Railway 注入的 `PORT`
+
+### 推荐配置
+
+在 Railway 为该服务挂一个 Volume，并把挂载路径设为 `/data`。容器内实际数据目录默认使用 `/data/poker`，其中会保存：
+
+- SQLite：`/data/poker/poker.db`
+- 上传文件：`/data/poker/uploads/`
+
+如需覆盖，可设置环境变量：
+
+- `DATA_DIR=/data/poker`
+- `DATABASE_URL=sqlite:////data/poker/poker.db`
+- `UPLOAD_DIR=/data/poker/uploads`
+- `SECRET_KEY=...`
+- `JWT_SECRET=...`
+- `ADMIN_PHONE=...`
+- `ADMIN_TEMP_PASSWORD=...`
+
+### 部署步骤
+
+1. 将当前分支推到 GitHub 仓库
+2. 在 Railway 中选择 `Deploy from GitHub repo`
+3. 选中仓库 `Jelee0145/poker`
+4. 确认 Railway 检测到仓库根目录 `Dockerfile`
+5. 配置 Volume 挂载到 `/data`
+6. 配置上面的环境变量并重新部署
+
+部署完成后：
+
+- 前台首页：`/`
+- 健康检查：`/api/health`
+- 管理员登录接口：`/api/auth/admin-login`
+
 ## 环境
 
 - 开发:dev 本地机

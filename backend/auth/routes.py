@@ -125,6 +125,31 @@ def admin_login():
     })
 
 
+@auth_bp.post("/demo-login")
+def demo_login():
+    """Temporary demo login that issues an access token without SMS flow."""
+    from flask import current_app
+
+    cfg = current_app.config
+    user = service.get_or_create_user(cfg["DEMO_PHONE"])
+    user.nickname = cfg["DEMO_NICKNAME"]
+    if not user.role:
+        user.role = "user"
+    db.session.commit()
+
+    tokens = service.issue_tokens(user)
+    return ok({
+        **tokens,
+        "user": {
+            "id": user.id,
+            "phone": user.phone,
+            "role": user.role,
+            "points": user.points,
+            "nickname": user.nickname,
+        },
+    })
+
+
 @auth_bp.post("/refresh")
 def refresh():
     auth_header = request.headers.get("Authorization", "")

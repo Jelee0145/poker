@@ -7,6 +7,11 @@ import os
 from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DATA_DIR = os.environ.get("DATA_DIR", "/data/poker")
+
+
+def _sqlite_uri(path):
+    return "sqlite:///" + path.replace("\\", "/")
 
 
 class Config:
@@ -14,7 +19,7 @@ class Config:
 
     # 生产:/data/poker/poker.db;本地开发可用 DATABASE_URL 覆盖
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL", "sqlite:////data/poker/poker.db"
+        "DATABASE_URL", _sqlite_uri(os.path.join(DATA_DIR, "poker.db"))
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -31,9 +36,11 @@ class Config:
     # 临时管理员登录(短信未开通前的过渡方案,接入短信后应移除/关闭)
     ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "13424514766")
     ADMIN_TEMP_PASSWORD = os.environ.get("ADMIN_TEMP_PASSWORD", "ZSPT@wmdwp2026")
+    DEMO_PHONE = os.environ.get("DEMO_PHONE", "13900000000")
+    DEMO_NICKNAME = os.environ.get("DEMO_NICKNAME", "Railway Demo")
 
     # 图片上传(扑克牌正反面)
-    UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "/data/poker/uploads")
+    UPLOAD_DIR = os.environ.get("UPLOAD_DIR", os.path.join(DATA_DIR, "uploads"))
     MAX_CONTENT_LENGTH = 8 * 1024 * 1024  # 单文件 8MB
     ALLOWED_IMG_EXT = {"png", "jpg", "jpeg", "webp", "gif"}
 
@@ -46,7 +53,7 @@ class DevConfig(Config):
     DEBUG = True
     # 本地开发默认用项目内 sqlite 文件,生产用 /data/poker/poker.db
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL", "sqlite:///" + os.path.join(BASE_DIR, "poker_dev.db")
+        "DATABASE_URL", _sqlite_uri(os.path.join(BASE_DIR, "poker_dev.db"))
     )
     UPLOAD_DIR = os.environ.get(
         "UPLOAD_DIR", os.path.join(BASE_DIR, "uploads")
